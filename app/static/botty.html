@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot</title>
+</head>
+<body>
+    <h1>Chat Bot</h1>
+    <form id="chat-form" action="/get-response" method="post">
+        <label for="question">Question:</label>
+        <input type="text" id="question" name="question">
+        <button type="submit">Ask</button>
+    </form>
+    <div id="response-container"></div>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const responseContainer = document.getElementById('response-container');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const question = document.getElementById('question').value;
+
+            try {
+                const response = await fetch(`/get-response`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({question}),
+                });
+                const data = await response.json();
+
+                // Display question
+                responseContainer.innerHTML = `<p><strong>Question:</strong> ${question}</p>`;
+
+                // Display response
+                if (data.error) {
+                    responseContainer.innerHTML += `<p><strong>Error:</strong> ${data.error}</p>`;
+                } else {
+                    responseContainer.innerHTML += `<p><strong>Article URL:</strong> ${data.article_url}</p>`;
+                    responseContainer.innerHTML += `<p><strong>Summary:</strong> ${data.summary}</p>`;
+                }
+            } catch (error) {
+                responseContainer.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
