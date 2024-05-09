@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Line Interface</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #terminal {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            overflow-y: scroll;
+        }
+        .prompt::before {
+            content: "> ";
+            color: green;
+        }
+        input[type="text"] {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div>Welcome to Command Line Interface</div>
+        <div>Initializing...</div>
+    </div>
+    <form id="commandForm">
+        <span class="prompt">&gt; </span><input type="text" id="commandInput" autocomplete="off">
+    </form>
+    <script>
+        window.onload = function() {
+            async function sendInputToServer(input) {
+                try {
+                    const response = await fetch('/process_input', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ user_input: input })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const responseData = await response.json();
+                    return responseData;
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            const commandForm = document.getElementById('commandForm');
+            const commandInput = document.getElementById('commandInput');
+            commandForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const command = commandInput.value.trim();
+                if (command !== '') {
+                    const terminal = document.getElementById('terminal');
+                    terminal.innerHTML += '\n';
+                    terminal.innerHTML += '> ' + command + ' ';
+                    terminal.scrollTop = terminal.scrollHeight;
+
+                    // Stagger loading responses
+                    await loadMessage('Scanning input...');
+                    await loadMessage('Analyzing data...');
+                    await loadMessage('Scanning resources...');
+                    await loadMessage('Generating response...');
+                    await loadMessage('Creating report...');
+
+                    // Send user input to server and display response
+                    const responseData = await sendInputToServer(command);
+                    if (responseData.error) {
+                        terminal.innerHTML += '\n';
+                        terminal.innerHTML += '> ' + responseData.error + '\n';
+                    } else {
+                        terminal.innerHTML += '\n';
+                        terminal.innerHTML += '> Article URL: ' + responseData.article_url + '\n';
+                        terminal.innerHTML += '> Summary: ' + responseData.summary + '\n';
+                    }
+
+                    // Prompt for next command
+                    terminal.innerHTML += '> Enter a command:';
+                    terminal.scrollTop = terminal.scrollHeight;
+                    commandInput.value = '';
+                }
+            });
+        };
+
+        function loadMessage(message) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const terminal = document.getElementById('terminal');
+                    terminal.innerHTML += '\n';
+                    terminal.innerHTML += message;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    resolve();
+                }, 1000); // Adjust the delay as needed
+            });
+        }
+    </script>
+</body>
+</html>
