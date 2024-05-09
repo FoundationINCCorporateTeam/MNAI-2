@@ -1,0 +1,30 @@
+version: 1
+name: my-flask-app
+
+environments:
+  - name: production
+    runtime:
+      build:
+        steps:
+          # Step 1: Install Rust using rustup
+          - name: Install Rust
+            command: |
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+          # Step 2: Install Python dependencies
+          - name: Install Python dependencies
+            command: pip install -r requirements.txt
+          # Step 3: Install your application
+          - name: Install Application
+            command: python setup.py install
+    routes:
+      - path: /  # Route requests to the root path
+        type: http
+        destinations:
+          - service: my-flask-app
+            port: 8080  # Assuming your Flask app runs on port 8080
+    services:
+      - name: my-flask-app
+        image: python:3.9  # Use Python 3.9 as the base image
+        command: python app.py  # Start your Flask app
+        http:
+          port: 8080  # Expose port 8080 for HTTP traffic
